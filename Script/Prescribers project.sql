@@ -317,16 +317,44 @@ WHERE total_claim_count >=3000
 
 --7a. First, create a list of all npi/drug_name combinations for pain management specialists (specialty_description = 'Pain Management) in the city of Nashville (nppes_provider_city = 'NASHVILLE'), where the drug is an opioid (opiod_drug_flag = 'Y'). **Warning:** Double-check your query before running it. You will only need to use the prescriber and drug tables since you don't need the claims numbers yet.
 
-0
+--notes: specialty_description from presctiber
+--
 
-
-
+SELECT
+		p1.npi
+	,	d.drug_name
+	,	(CASE WHEN p1.specialty_description = 'Pain Management' THEN 'Y' ELSE 'N' END) AS pain_specialty
+	,	(CASE WHEN nppes_provider_city = 'NASHVILLE' THEN 'Y' ELSE 'N' END) AS nash_city
+	,	(CASE WHEN opioid_drug_flag = 'Y' THEN 'Y' ELSE 'N' END) AS opioid_flag
+FROM prescriber AS p1
+	INNER JOIN prescription AS p2
+		ON p1.npi = p2.npi
+	INNER JOIN drug AS d
+		ON p2.drug_name = d.drug_name
+WHERE p1.specialty_description='Pain Management'
+	AND p1.nppes_provider_city = 'NASHVILLE'
+	AND d.opioid_drug_flag = 'Y'
 
 
 
 
 --7b. Next, report the number of claims per drug per prescriber. Be sure to include all combinations, whether or not the prescriber had any claims. You should report the npi, the drug name, and the number of claims (total_claim_count).
 
+SELECT
+		p1.npi
+	,	d.drug_name
+	,	(CASE WHEN p1.specialty_description = 'Pain Management' THEN 'Y' ELSE 'N' END) AS pain_specialty
+	,	(CASE WHEN nppes_provider_city = 'NASHVILLE' THEN 'Y' ELSE 'N' END) AS nash_city
+	,	(CASE WHEN opioid_drug_flag = 'Y' THEN 'Y' ELSE 'N' END) AS opioid_flag
+	,	(CASE WHEN p2.total_claim_count IS NULL THEN 0 ELSE p2.total_claim_count END) AS total_claim_count
+FROM prescriber AS p1
+	LEFT JOIN prescription AS p2
+		ON p1.npi = p2.npi
+	LEFT JOIN drug AS d
+		ON p2.drug_name = d.drug_name
+WHERE p1.specialty_description='Pain Management'
+	AND p1.nppes_provider_city = 'NASHVILLE'
+	AND d.opioid_drug_flag = 'Y'
 
 
 
@@ -336,7 +364,21 @@ WHERE total_claim_count >=3000
     
 --7c. Finally, if you have not done so already, fill in any missing values for total_claim_count with 0. Hint - Google the COALESCE function.
 
-
+SELECT
+		COALESCE(p2.total_claim_count, 0) AS total_claim_count
+	,	p1.npi
+	,	d.drug_name
+	,	(CASE WHEN p1.specialty_description = 'Pain Management' THEN 'Y' ELSE 'N' END) AS pain_specialty
+	,	(CASE WHEN nppes_provider_city = 'NASHVILLE' THEN 'Y' ELSE 'N' END) AS nash_city
+	,	(CASE WHEN opioid_drug_flag = 'Y' THEN 'Y' ELSE 'N' END) AS opioid_flag
+FROM prescriber AS p1
+	LEFT JOIN prescription AS p2
+		ON p1.npi = p2.npi
+	LEFT JOIN drug AS d
+		ON p2.drug_name = d.drug_name
+WHERE p1.specialty_description='Pain Management'
+	AND p1.nppes_provider_city = 'NASHVILLE'
+	AND d.opioid_drug_flag = 'Y'
 
 
 
